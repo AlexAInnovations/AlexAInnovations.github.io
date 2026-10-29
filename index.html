@@ -706,6 +706,28 @@
       *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
       .reveal{opacity:1;transform:none}
     }
+
+    /* ADDITIVE ONLY: screenshot support for projects loaded from projects.json.
+       No existing rule above was modified. */
+    .project-visual.has-image{padding:0;min-height:0}
+    .project-visual.has-image button{
+      display:block;width:100%;padding:0;margin:0;border:0;background:none;cursor:zoom-in;
+    }
+    .project-visual.has-image img{
+      display:block;width:100%;height:210px;object-fit:cover;object-position:top left;
+    }
+    .project-link{
+      display:inline-flex;align-items:center;gap:6px;margin-top:14px;
+      color:var(--green);font-size:14px;font-weight:700;text-decoration:none;
+    }
+    .project-link:hover{text-decoration:underline}
+    .lightbox{
+      border:1px solid var(--line);border-radius:20px;background:var(--card);
+      padding:14px;max-width:min(94vw,1400px);max-height:92vh;color:var(--white);
+    }
+    .lightbox::backdrop{background:rgba(0,0,0,.82)}
+    .lightbox img{display:block;max-width:100%;max-height:78vh;margin:0 auto;border-radius:12px}
+    .lightbox p{margin:10px 4px 0;color:var(--muted);font-size:14px;text-align:center}
   </style>
 
   <!-- Basic structured data for search engines -->
@@ -860,7 +882,8 @@
           <p>Practical examples of how I combine automation, CRM logic, AI, data, and web experiences.</p>
         </div>
 
-        <div class="projects">
+        <!-- Cards below are a fallback. When projects.json loads, they are replaced by it. -->
+        <div class="projects" id="projects-grid">
           <article class="project">
             <div class="project-visual" aria-hidden="true">
               <div class="flow">
@@ -1084,6 +1107,96 @@
     }, { rootMargin: '-35% 0px -55% 0px', threshold: 0 });
 
     sections.forEach(section => sectionObserver.observe(section));
+
+    // Render project cards from projects.json (edit that file to add projects).
+    (function () {
+      const grid = document.getElementById('projects-grid');
+      if (!grid) return;
+
+      const el = (tag, cls, text) => {
+        const n = document.createElement(tag);
+        if (cls) n.className = cls;
+        if (text) n.textContent = text;
+        return n;
+      };
+
+      // Only allow http(s) links and local relative image paths.
+      const safeUrl = (u) => /^(https?:\/\/|assets\/)/i.test(u || '') ? u : '';
+
+      const dialog = el('dialog', 'lightbox');
+      dialog.setAttribute('aria-label', 'Project screenshot');
+      const bigImg = el('img');
+      const bigCap = el('p');
+      dialog.append(bigImg, bigCap);
+      dialog.addEventListener('click', () => dialog.close());
+      document.body.appendChild(dialog);
+
+      function visual(p) {
+        const v = el('div', 'project-visual');
+        const img = safeUrl(p.image);
+        if (img) {
+          v.classList.add('has-image');
+          const btn = el('button');
+          btn.type = 'button';
+          btn.setAttribute('aria-label', 'Enlarge screenshot: ' + p.title);
+          const i = el('img');
+          i.src = img;
+          i.alt = p.imageAlt || p.title + ' screenshot';
+          i.loading = 'lazy';
+          btn.appendChild(i);
+          btn.addEventListener('click', () => {
+            bigImg.src = img;
+            bigImg.alt = i.alt;
+            bigCap.textContent = p.imageCaption || p.title;
+            dialog.showModal();
+          });
+          v.appendChild(btn);
+        } else {
+          v.setAttribute('aria-hidden', 'true');
+          const flow = el('div', 'flow');
+          (p.flow || []).forEach((step, idx) => {
+            if (idx > 0) {
+              const a = el('i', 'ph ph-arrow-right flow-arrow');
+              flow.appendChild(a);
+            }
+            flow.appendChild(el('div', 'flow-node', step));
+          });
+          v.appendChild(flow);
+        }
+        return v;
+      }
+
+      function card(p) {
+        const a = el('article', 'project');
+        a.appendChild(visual(p));
+        const body = el('div', 'project-body');
+        body.appendChild(el('div', 'card-tag', p.category || ''));
+        body.appendChild(el('h3', '', p.title));
+        body.appendChild(el('p', '', p.description || ''));
+        const link = safeUrl(p.link);
+        if (link) {
+          const l = el('a', 'project-link', (p.linkLabel || 'View project') + ' ');
+          l.href = link;
+          l.target = '_blank';
+          l.rel = 'noopener noreferrer';
+          l.appendChild(el('i', 'ph ph-arrow-up-right'));
+          body.appendChild(l);
+        }
+        const chips = el('div', 'chips');
+        (p.tags || []).forEach(t => chips.appendChild(el('span', 'chip', t)));
+        body.appendChild(chips);
+        a.appendChild(body);
+        return a;
+      }
+
+      fetch('projects.json', { cache: 'no-cache' })
+        .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+        .then(list => {
+          if (!Array.isArray(list) || !list.length) return;
+          grid.replaceChildren(...list.filter(p => p && p.title).map(card));
+        })
+        .catch(() => { /* keep the static fallback cards */ });
+    })();
   </script>
 </body>
 </html>
