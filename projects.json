@@ -1,0 +1,30 @@
+[
+  {
+    "category": "Lead Generation Automation",
+    "title": "GoVend Christchurch Lead System",
+    "description": "A weekly lead-generation workflow designed to discover businesses, prioritize promising locations, and reduce manual prospect research before outbound.",
+    "flow": ["Business Search", "Prioritize", "Verify", "CRM / Outreach"],
+    "tags": ["n8n", "Lead Gen", "Data Processing", "Automation"]
+  },
+  {
+    "category": "AI Knowledge Systems",
+    "title": "RAG + AI Agent Workflow",
+    "description": "A reusable architecture for turning business documents and SOPs into searchable knowledge that an AI agent can retrieve and use inside an automation.",
+    "flow": ["Documents", "Embeddings", "Vector DB", "AI Agent"],
+    "tags": ["n8n", "RAG", "Supabase", "PostgreSQL"]
+  },
+  {
+    "category": "CRM Architecture",
+    "title": "GHL Appointment Booking System",
+    "description": "A done-for-you CRM journey connecting lead capture, pipeline stages, appointment scheduling, reminders, and automated follow-up.",
+    "flow": ["Form / Landing Page", "GHL CRM", "Calendar", "Follow-up"],
+    "tags": ["GoHighLevel", "Funnels", "Calendars", "Workflows"]
+  },
+  {
+    "category": "Operations Automation",
+    "title": "Insurance Workflow Automation",
+    "description": "Workflow concepts for organizing application data, renewals, coverage details, and handoffs so repetitive insurance operations become easier to manage.",
+    "flow": ["Client Request", "Data Capture", "Rules", "Human Review"],
+    "tags": ["Process Mapping", "CRM", "Data", "Human-in-the-loop"]
+  }
+]
